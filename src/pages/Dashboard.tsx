@@ -1,39 +1,98 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
-import { 
-  Activity, 
-  Camera, 
-  MessageSquare, 
-  TrendingUp, 
-  Flame, 
+import {
+  Activity,
+  Camera,
+  MessageSquare,
+  TrendingUp,
+  Flame,
   Apple,
   Droplet,
   Zap,
   Target,
-  Award
+  Award,
+  LogOut
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const [loading, setLoading] = useState(true);
 
-  const dailyStats = {
-    calories: { current: 1650, target: 2000, unit: "kcal" },
-    protein: { current: 85, target: 120, unit: "g" },
-    water: { current: 6, target: 8, unit: "glasses" },
-    steps: { current: 7500, target: 10000, unit: "steps" },
+  const [dailyStats, setDailyStats] = useState({
+    calories: { current: 0, target: 2000, unit: "kcal" },
+    protein: { current: 0, target: 120, unit: "g" },
+    water: { current: 0, target: 8, unit: "glasses" },
+    steps: { current: 0, target: 10000, unit: "steps" },
+  });
+
+  const [userName, setUserName] = useState("there");
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [user]);
+
+  const loadDashboardData = async () => {
+    if (!user) return;
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+
+      const [profileResponse, dailyLogResponse] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+        supabase.from("daily_logs").select("*").eq("user_id", user.id).eq("log_date", today).maybeSingle(),
+      ]);
+
+      if (profileResponse.data) {
+        const profile = profileResponse.data;
+        setUserName(profile.full_name?.split(' ')[0] || "there");
+        setDailyStats(prev => ({
+          ...prev,
+          calories: { ...prev.calories, target: profile.daily_calorie_goal || 2000 },
+          protein: { ...prev.protein, target: profile.daily_protein_goal || 120 },
+        }));
+      }
+
+      if (dailyLogResponse.data) {
+        const log = dailyLogResponse.data;
+        setDailyStats(prev => ({
+          calories: { current: log.total_calories || 0, target: prev.calories.target, unit: "kcal" },
+          protein: { current: log.total_protein_g || 0, target: prev.protein.target, unit: "g" },
+          water: { current: log.water_glasses || 0, target: 8, unit: "glasses" },
+          steps: { current: log.steps || 0, target: 10000, unit: "steps" },
+        }));
+      }
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
   };
 
   const aiTips = [
-    "Great job staying hydrated! Try to drink 2 more glasses of water today.",
-    "You're 350 calories under your target. Consider a healthy snack like nuts or fruit.",
-    "Your protein intake is on track! Keep up the good work with lean proteins.",
+    dailyStats.water.current < dailyStats.water.target
+      ? `Great job staying hydrated! Try to drink ${dailyStats.water.target - dailyStats.water.current} more glasses of water today.`
+      : "Excellent hydration today!",
+    dailyStats.calories.current < dailyStats.calories.target * 0.8
+      ? `You're ${dailyStats.calories.target - dailyStats.calories.current} calories under your target. Consider a healthy snack like nuts or fruit.`
+      : "Your calorie intake is on track!",
+    dailyStats.protein.current >= dailyStats.protein.target * 0.9
+      ? "Your protein intake is excellent! Keep up the good work with lean proteins."
+      : `Try to add ${Math.round(dailyStats.protein.target - dailyStats.protein.current)}g more protein to reach your goal.`,
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -47,15 +106,16 @@ const Dashboard = () => {
             <Button variant="ghost" size="icon" onClick={() => navigate("/profile")}>
               <Target className="w-5 h-5" />
             </Button>
+            <Button variant="ghost" size="icon" onClick={handleSignOut}>
+              <LogOut className="w-5 h-5" />
+            </Button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Welcome Section */}
         <div className="mb-8 animate-slide-up">
-          <h1 className="text-3xl font-bold mb-2">Welcome back! 👋</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome back, {userName}!</h1>
           <p className="text-muted-foreground">Here's your health summary for today</p>
         </div>
 

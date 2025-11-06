@@ -34,13 +34,16 @@ const Signup = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       });
 
       if (error) throw error;
 
       toast({
         title: "Account created!",
-        description: "Welcome to AI Health Mentor. Check your email to verify your account.",
+        description: "Welcome to AI Health Mentor.",
       });
       navigate("/dashboard");
     } catch (error: any) {

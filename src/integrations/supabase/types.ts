@@ -14,16 +14,234 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          achieved_at: string | null
+          achievement_name: string
+          achievement_type: string | null
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          achievement_name: string
+          achievement_type?: string | null
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string | null
+          achievement_name?: string
+          achievement_type?: string | null
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_logs: {
+        Row: {
+          created_at: string | null
+          health_score: number | null
+          id: string
+          log_date: string
+          steps: number | null
+          total_calories: number | null
+          total_carbs_g: number | null
+          total_fats_g: number | null
+          total_protein_g: number | null
+          user_id: string
+          water_glasses: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          health_score?: number | null
+          id?: string
+          log_date?: string
+          steps?: number | null
+          total_calories?: number | null
+          total_carbs_g?: number | null
+          total_fats_g?: number | null
+          total_protein_g?: number | null
+          user_id: string
+          water_glasses?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          health_score?: number | null
+          id?: string
+          log_date?: string
+          steps?: number | null
+          total_calories?: number | null
+          total_carbs_g?: number | null
+          total_fats_g?: number | null
+          total_protein_g?: number | null
+          user_id?: string
+          water_glasses?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meals: {
+        Row: {
+          calories: number
+          carbs_g: number
+          created_at: string | null
+          fats_g: number
+          fiber_g: number | null
+          id: string
+          image_url: string | null
+          logged_at: string | null
+          meal_name: string
+          meal_type: string | null
+          protein_g: number
+          user_id: string
+        }
+        Insert: {
+          calories?: number
+          carbs_g?: number
+          created_at?: string | null
+          fats_g?: number
+          fiber_g?: number | null
+          id?: string
+          image_url?: string | null
+          logged_at?: string | null
+          meal_name: string
+          meal_type?: string | null
+          protein_g?: number
+          user_id: string
+        }
+        Update: {
+          calories?: number
+          carbs_g?: number
+          created_at?: string | null
+          fats_g?: number
+          fiber_g?: number | null
+          id?: string
+          image_url?: string | null
+          logged_at?: string | null
+          meal_name?: string
+          meal_type?: string | null
+          protein_g?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          created_at: string | null
+          daily_calorie_goal: number | null
+          daily_carbs_goal: number | null
+          daily_fats_goal: number | null
+          daily_protein_goal: number | null
+          dietary_preferences: string[] | null
+          full_name: string | null
+          gender: string | null
+          height_cm: number | null
+          id: string
+          target_weight_kg: number | null
+          updated_at: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string | null
+          daily_calorie_goal?: number | null
+          daily_carbs_goal?: number | null
+          daily_fats_goal?: number | null
+          daily_protein_goal?: number | null
+          dietary_preferences?: string[] | null
+          full_name?: string | null
+          gender?: string | null
+          height_cm?: number | null
+          id: string
+          target_weight_kg?: number | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string | null
+          daily_calorie_goal?: number | null
+          daily_carbs_goal?: number | null
+          daily_fats_goal?: number | null
+          daily_protein_goal?: number | null
+          dietary_preferences?: string[] | null
+          full_name?: string | null
+          gender?: string | null
+          height_cm?: number | null
+          id?: string
+          target_weight_kg?: number | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +368,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

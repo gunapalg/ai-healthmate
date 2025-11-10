@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Activity, ArrowLeft, Trophy, Target, Flame } from "lucide-react";
 import { toast } from "sonner";
+import { AchievementsSkeleton } from "@/components/ui/loading-skeleton";
 
 interface Achievement {
   id: string;
@@ -113,7 +114,9 @@ const Achievements = () => {
             <Badge variant="secondary">{earnedAchievements.length}</Badge>
           </div>
 
-          {earnedAchievements.length === 0 ? (
+          {loading ? (
+            <AchievementsSkeleton />
+          ) : earnedAchievements.length === 0 ? (
             <Card className="shadow-health-sm">
               <CardContent className="py-12 text-center">
                 <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />

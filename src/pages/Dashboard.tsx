@@ -21,6 +21,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -151,6 +152,23 @@ const Dashboard = () => {
       ? "Your protein intake is excellent! Keep up the good work with lean proteins."
       : `Try to add ${Math.round(dailyStats.protein.target - dailyStats.protein.current)}g more protein to reach your goal.`,
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border bg-card">
+          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="w-8 h-8 text-primary" />
+              <span className="text-xl font-bold">AI Health Mentor</span>
+            </div>
+            <ThemeToggle />
+          </div>
+        </header>
+        <DashboardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

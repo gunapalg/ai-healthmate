@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, TrendingUp, Flame, Star } from "lucide-react";
+import { LeaderboardSkeleton } from "@/components/ui/loading-skeleton";
 
 interface LeaderboardEntry {
   id: string;
@@ -103,7 +104,7 @@ export default function Leaderboard() {
               </CardHeader>
               <CardContent>
                 {loading ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                  <LeaderboardSkeleton />
                 ) : entries.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     No entries yet. Be the first!

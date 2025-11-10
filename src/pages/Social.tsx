@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { SocialFeedSkeleton } from "@/components/ui/loading-skeleton";
 
 interface Post {
   id: string;
@@ -27,7 +28,7 @@ export default function Social() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadPosts();
@@ -35,6 +36,7 @@ export default function Social() {
   }, []);
 
   const loadPosts = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from("posts")
@@ -51,6 +53,8 @@ export default function Social() {
       setPosts(data || []);
     } catch (error) {
       console.error("Error loading posts:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,7 +82,7 @@ export default function Social() {
   const handleCreatePost = async () => {
     if (!user || !newPost.trim()) return;
 
-    setLoading(true);
+    const createLoading = true;
     try {
       const { error } = await supabase.from("posts").insert({
         user_id: user.id,
@@ -93,8 +97,6 @@ export default function Social() {
     } catch (error) {
       console.error("Error creating post:", error);
       toast.error("Failed to create post");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -147,15 +149,18 @@ export default function Social() {
                 className="mb-4"
                 rows={3}
               />
-              <Button onClick={handleCreatePost} disabled={loading || !newPost.trim()}>
-                {loading ? "Posting..." : "Post"}
+              <Button onClick={handleCreatePost} disabled={!newPost.trim()}>
+                Post
               </Button>
             </CardContent>
           </Card>
         )}
 
         <div className="space-y-4">
-          {posts.map((post) => (
+          {loading ? (
+            <SocialFeedSkeleton />
+          ) : (
+            posts.map((post) => (
             <Card key={post.id}>
               <CardHeader>
                 <div className="flex items-center gap-3">
@@ -206,7 +211,7 @@ export default function Social() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )))}
         </div>
       </div>
     </div>

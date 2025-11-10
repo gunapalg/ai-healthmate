@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { logAIRequest } from "@/lib/ai-logger";
+import { ChatSkeleton } from "@/components/ui/loading-skeleton";
 
 interface Message {
   id: string;
@@ -266,7 +267,10 @@ const AIChat = () => {
 
       <main className="flex-1 container mx-auto px-4 py-6 flex flex-col max-w-4xl">
         <div className="flex-1 overflow-y-auto space-y-6 mb-6">
-          {messages.map((message) => (
+          {loading && messages.length === 1 ? (
+            <ChatSkeleton />
+          ) : (
+            messages.map((message) => (
             <div
               key={message.id}
               className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
@@ -297,9 +301,9 @@ const AIChat = () => {
                 </div>
               )}
             </div>
-          ))}
+          )))}
 
-          {loading && (
+          {loading && messages.length > 1 && (
             <div className="flex gap-3 justify-start">
               <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center flex-shrink-0">
                 <Bot className="w-5 h-5 text-primary-foreground" />

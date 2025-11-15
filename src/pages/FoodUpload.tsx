@@ -107,6 +107,18 @@ const FoodUpload = () => {
     setSaving(true);
 
     try {
+      // Ensure user has a profile first
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!profile) {
+        // Create profile if it doesn't exist
+        await supabase.from("profiles").insert({ id: user.id });
+      }
+
       const { error: mealError } = await supabase.from("meals").insert({
         user_id: user.id,
         meal_name: nutritionData.meal_name,

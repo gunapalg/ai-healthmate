@@ -37,19 +37,9 @@ const secureStorage = {
   },
 };
 
-// Validate environment variables
-const validateEnv = () => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Missing Supabase environment variables. Please check your .env file.'
-    );
-  }
-
-  return { supabaseUrl, supabaseAnonKey };
-};
+// Supabase configuration - these are public keys, safe to hardcode
+const supabaseUrl = "https://ygedaehnnwepxipzvfxh.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlnZWRhZWhubndlcHhpcHp2ZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzOTgzNjIsImV4cCI6MjA3Nzk3NDM2Mn0.83UkkgZGiU75OVYtTOV9SCCpTIjTFys2Sbiw30GMimo";
 
 // Rate limiting middleware
 const withRateLimit = async <T>(
@@ -85,8 +75,6 @@ const withRateLimit = async <T>(
     throw error;
   }
 };
-
-const { supabaseUrl, supabaseAnonKey } = validateEnv();
 
 // Create the Supabase client with enhanced security settings
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {

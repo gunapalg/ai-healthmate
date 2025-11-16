@@ -16,7 +16,8 @@ import {
   Award,
   LogOut,
   Trophy,
-  Users
+  Users,
+  Bot
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -336,6 +337,14 @@ const Dashboard = () => {
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Ask AI Coach
+              </Button>
+              <Button 
+                className="w-full justify-start bg-primary/10 hover:bg-primary/20 border-primary/20" 
+                variant="outline"
+                onClick={() => navigate("/health-agent")}
+              >
+                <Bot className="w-4 h-4 mr-2 text-primary" />
+                <span className="text-primary font-medium">Health Planning Agent</span>
               </Button>
               <Button 
                 className="w-full justify-start" 

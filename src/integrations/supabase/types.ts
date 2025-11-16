@@ -55,6 +55,142 @@ export type Database = {
           },
         ]
       }
+      agent_actions: {
+        Row: {
+          action_data: Json
+          action_type: string
+          created_at: string
+          executed_at: string
+          id: string
+          reasoning: string | null
+          result: Json | null
+          session_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          action_data?: Json
+          action_type: string
+          created_at?: string
+          executed_at?: string
+          id?: string
+          reasoning?: string | null
+          result?: Json | null
+          session_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          action_data?: Json
+          action_type?: string
+          created_at?: string
+          executed_at?: string
+          id?: string
+          reasoning?: string | null
+          result?: Json | null
+          session_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_actions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "agent_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_actions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_memory: {
+        Row: {
+          created_at: string
+          id: string
+          importance: number | null
+          key: string
+          memory_type: string
+          updated_at: string
+          user_id: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          importance?: number | null
+          key: string
+          memory_type: string
+          updated_at?: string
+          user_id: string
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          importance?: number | null
+          key?: string
+          memory_type?: string
+          updated_at?: string
+          user_id?: string
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_memory_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_sessions: {
+        Row: {
+          context: Json | null
+          created_at: string
+          ended_at: string | null
+          id: string
+          session_type: string
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          session_type?: string
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          session_type?: string
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_request_logs: {
         Row: {
           completion_tokens: number | null
@@ -296,6 +432,68 @@ export type Database = {
           },
         ]
       }
+      health_goals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          current_value: number | null
+          deadline: string | null
+          description: string | null
+          goal_type: string
+          id: string
+          priority: number | null
+          status: string
+          target_value: number | null
+          title: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          deadline?: string | null
+          description?: string | null
+          goal_type: string
+          id?: string
+          priority?: number | null
+          status?: string
+          target_value?: number | null
+          title: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_value?: number | null
+          deadline?: string | null
+          description?: string | null
+          goal_type?: string
+          id?: string
+          priority?: number | null
+          status?: string
+          target_value?: number | null
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_metrics: {
         Row: {
           created_at: string | null
@@ -329,6 +527,53 @@ export type Database = {
             foreignKeyName: "health_metrics_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intervention_history: {
+        Row: {
+          created_at: string
+          effectiveness_score: number | null
+          id: string
+          intervention_type: string
+          outcome: string | null
+          recommendation: string
+          responded_at: string | null
+          trigger_data: Json
+          user_id: string
+          user_response: string | null
+        }
+        Insert: {
+          created_at?: string
+          effectiveness_score?: number | null
+          id?: string
+          intervention_type: string
+          outcome?: string | null
+          recommendation: string
+          responded_at?: string | null
+          trigger_data?: Json
+          user_id: string
+          user_response?: string | null
+        }
+        Update: {
+          created_at?: string
+          effectiveness_score?: number | null
+          id?: string
+          intervention_type?: string
+          outcome?: string | null
+          recommendation?: string
+          responded_at?: string | null
+          trigger_data?: Json
+          user_id?: string
+          user_response?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intervention_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },

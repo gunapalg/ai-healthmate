@@ -19,6 +19,7 @@ import Pricing from "./pages/Pricing";
 import Leaderboard from "./pages/Leaderboard";
 import Social from "./pages/Social";
 import NotFound from "./pages/NotFound";
+import HealthAgent from "./pages/HealthAgent";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Social />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/health-agent"
+              element={
+                <ProtectedRoute>
+                  <HealthAgent />
                 </ProtectedRoute>
               }
             />

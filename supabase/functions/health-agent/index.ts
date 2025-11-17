@@ -209,22 +209,35 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an autonomous health planning agent. Your role is to:
-1. Analyze user's health data and identify trends
-2. Create personalized health goals based on their profile and progress
-3. Provide actionable meal recommendations
-4. Monitor progress and suggest interventions
-5. Remember user preferences and adapt recommendations
+            content: `You are an autonomous health planning agent with deep memory and contextual awareness. Your role is to:
 
-You have access to tools that let you:
-- Analyze health trends from their daily logs
-- Create health goals with specific targets
-- Generate meal plans based on their goals
-- Log your interventions for tracking
-- Get comprehensive user context
+1. **Analyze & Learn**: Study user's health patterns, preferences, and behaviors over time
+2. **Personalized Goals**: Create SMART goals tailored to the user's lifestyle, preferences, and past successes
+3. **Proactive Coaching**: Identify opportunities for improvement and suggest interventions before problems arise
+4. **Meal Intelligence**: Recommend meals considering dietary preferences, past favorites, and nutritional gaps
+5. **Progress Tracking**: Monitor goal progress and celebrate wins, while addressing setbacks compassionately
 
-Be proactive, encouraging, and data-driven. Always explain your reasoning when making recommendations.
-When you identify an opportunity for improvement, take action by creating goals or logging interventions.`
+**Available Tools**:
+- analyze_health_trends: Deep dive into recent health data to spot patterns
+- create_health_goal: Set specific, measurable, achievable goals
+- create_meal_plan: Generate personalized meal suggestions
+- log_intervention: Record recommendations for future learning
+- get_user_context: Access profile, goals, metrics, and learned preferences
+
+**Communication Style**:
+- Be encouraging and supportive, not judgmental
+- Use data to back up recommendations
+- Explain your reasoning clearly
+- Ask clarifying questions when needed
+- Celebrate progress and learn from setbacks
+- Remember past conversations and preferences
+
+**When to Take Action**:
+- User asks for goal setting → Use create_health_goal
+- User needs meal ideas → Use create_meal_plan
+- You spot an important trend → Use log_intervention
+- You need context to help → Use get_user_context
+- Always analyze trends before making major recommendations`
           },
           ...messages
         ],
@@ -240,18 +253,31 @@ When you identify an opportunity for improvement, take action by creating goals 
       
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ 
+            error: 'Rate limit exceeded. Please wait a moment and try again.',
+            retryAfter: 60 
+          }),
+          { 
+            status: 429, 
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json',
+              'Retry-After': '60'
+            } 
+          }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'AI service requires payment. Please contact support.' }),
+          JSON.stringify({ 
+            error: 'AI service quota exceeded. Please add credits to your Lovable workspace.',
+            helpUrl: 'https://docs.lovable.dev/features/ai'
+          }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      throw new Error(`AI API error: ${response.status}`);
+      throw new Error(`AI API error: ${response.status} - ${errorText}`);
     }
 
     const aiResponse = await response.json();
@@ -367,18 +393,21 @@ async function executeToolCall(functionName: string, args: any, userId: string, 
 }
 
 async function getUserContext(userId: string, supabase: any) {
-  const [profileRes, goalsRes, metricsRes, memoryRes] = await Promise.all([
+  const [profileRes, goalsRes, metricsRes, memoryRes, recentInterventions] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
     supabase.from('health_goals').select('*').eq('user_id', userId).eq('status', 'active'),
     supabase.from('health_metrics').select('*').eq('user_id', userId).maybeSingle(),
-    supabase.from('agent_memory').select('*').eq('user_id', userId),
+    supabase.from('agent_memory').select('*').eq('user_id', userId).order('importance', { ascending: false }).limit(10),
+    supabase.from('intervention_history').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
   ]);
 
   return {
     profile: profileRes.data,
     active_goals: goalsRes.data || [],
     health_metrics: metricsRes.data,
-    preferences: memoryRes.data || []
+    learned_preferences: memoryRes.data || [],
+    recent_interventions: recentInterventions.data || [],
+    context_summary: `User has ${goalsRes.data?.length || 0} active goals, ${memoryRes.data?.length || 0} learned preferences, and ${recentInterventions.data?.length || 0} recent interventions.`
   };
 }
 

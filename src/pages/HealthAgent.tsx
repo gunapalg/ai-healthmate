@@ -6,9 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Send, Bot, User, Target, TrendingUp, Sparkles, ArrowLeft } from "lucide-react";
+import { Send, Bot, User, Target, TrendingUp, Sparkles, ArrowLeft, Bell } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Message {
   role: "user" | "assistant";
@@ -41,6 +42,7 @@ export default function HealthAgent() {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [activeGoals, setActiveGoals] = useState<HealthGoal[]>([]);
+  const [agentNotification, setAgentNotification] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +51,8 @@ export default function HealthAgent() {
       return;
     }
     loadActiveGoals();
+    loadConversationHistory();
+    setupRealtimeMonitoring();
   }, [user, navigate]);
 
   useEffect(() => {
@@ -72,6 +76,81 @@ export default function HealthAgent() {
     }
 
     setActiveGoals(data || []);
+  };
+
+  const loadConversationHistory = async () => {
+    if (!user) return;
+
+    try {
+      // Get the most recent active session
+      const { data: sessionData } = await supabase
+        .from("agent_sessions")
+        .select("id, context")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (sessionData) {
+        setSessionId(sessionData.id);
+        
+        // Load conversation from context
+        if (sessionData.context && typeof sessionData.context === 'object' && 'messages' in sessionData.context) {
+          const savedMessages = (sessionData.context as any).messages;
+          if (Array.isArray(savedMessages) && savedMessages.length > 1) {
+            setMessages(savedMessages);
+          }
+        }
+      }
+    } catch (error) {
+      console.log("No previous conversation found");
+    }
+  };
+
+  const setupRealtimeMonitoring = () => {
+    if (!user) return;
+
+    // Listen for new meals
+    const mealsChannel = supabase
+      .channel('meals-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'meals',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setAgentNotification("I noticed you logged a new meal. Let me analyze your nutrition progress...");
+          setTimeout(() => setAgentNotification(null), 5000);
+        }
+      )
+      .subscribe();
+
+    // Listen for daily log updates
+    const logsChannel = supabase
+      .channel('logs-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'daily_logs',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setAgentNotification("Your daily stats have been updated. I can help you optimize your progress!");
+          setTimeout(() => setAgentNotification(null), 5000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(mealsChannel);
+      supabase.removeChannel(logsChannel);
+    };
   };
 
   const sendMessage = async () => {
@@ -107,6 +186,15 @@ export default function HealthAgent() {
         setSessionId(data.sessionId);
       }
 
+      // Save conversation history to session context
+      const updatedMessages = [...messages, userMessage, assistantMessage];
+      await supabase
+        .from("agent_sessions")
+        .update({ 
+          context: { messages: updatedMessages } as any
+        })
+        .eq("id", data.sessionId);
+
       // Reload goals if agent created new ones
       if (data.actions?.includes("create_health_goal")) {
         await loadActiveGoals();
@@ -114,7 +202,15 @@ export default function HealthAgent() {
 
     } catch (error: any) {
       console.error("Error calling health agent:", error);
-      toast.error(error.message || "Failed to get response from agent");
+      
+      // Handle specific error types
+      if (error.message?.includes("Rate limit") || error.message?.includes("429")) {
+        toast.error("Too many requests. Please wait a moment and try again.");
+      } else if (error.message?.includes("Payment") || error.message?.includes("402")) {
+        toast.error("AI service requires payment. Please contact support.");
+      } else {
+        toast.error(error.message || "Failed to get response from agent");
+      }
       
       setMessages(prev => [...prev, {
         role: "assistant",
@@ -168,6 +264,12 @@ export default function HealthAgent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Chat Interface */}
           <Card className="lg:col-span-2 p-6 flex flex-col h-[600px]">
+            {agentNotification && (
+              <Alert className="mb-4 bg-primary/10 border-primary/20">
+                <Bell className="h-4 w-4" />
+                <AlertDescription>{agentNotification}</AlertDescription>
+              </Alert>
+            )}
             <ScrollArea className="flex-1 pr-4 mb-4">
               <div className="space-y-4">
                 {messages.map((message, index) => (

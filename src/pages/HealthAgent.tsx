@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Send, Bot, User, Target, TrendingUp, Sparkles, ArrowLeft, Bell } from "lucide-react";
+import { Send, Bot, User, Target, TrendingUp, Sparkles, ArrowLeft, Bell, Star } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -29,6 +29,14 @@ interface HealthGoal {
   deadline: string | null;
 }
 
+interface Intervention {
+  id: string;
+  intervention_type: string;
+  recommendation: string;
+  created_at: string;
+  effectiveness_score: number | null;
+}
+
 export default function HealthAgent() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -43,6 +51,7 @@ export default function HealthAgent() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [activeGoals, setActiveGoals] = useState<HealthGoal[]>([]);
   const [agentNotification, setAgentNotification] = useState<string | null>(null);
+  const [recentInterventions, setRecentInterventions] = useState<Intervention[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,6 +61,7 @@ export default function HealthAgent() {
     }
     loadActiveGoals();
     loadConversationHistory();
+    loadRecentInterventions();
     setupRealtimeMonitoring();
   }, [user, navigate]);
 
@@ -76,6 +86,44 @@ export default function HealthAgent() {
     }
 
     setActiveGoals(data || []);
+  };
+
+  const loadRecentInterventions = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("intervention_history")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error("Error loading interventions:", error);
+      return;
+    }
+
+    setRecentInterventions(data || []);
+  };
+
+  const rateIntervention = async (interventionId: string, score: number) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("intervention_history")
+      .update({ 
+        effectiveness_score: score,
+        user_response: score >= 3 ? "helpful" : "not_helpful"
+      })
+      .eq("id", interventionId);
+
+    if (error) {
+      toast.error("Failed to save rating");
+      return;
+    }
+
+    toast.success("Thank you for your feedback!");
+    loadRecentInterventions();
   };
 
   const loadConversationHistory = async () => {
@@ -398,6 +446,65 @@ export default function HealthAgent() {
                           </span>
                         )}
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <Card className="p-6">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <TrendingUp className="h-5 h-5 text-primary" />
+                Recent Recommendations
+              </h3>
+              
+              {recentInterventions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No recommendations yet. The agent will proactively suggest improvements based on your health data.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {recentInterventions.map((intervention) => (
+                    <div
+                      key={intervention.id}
+                      className="p-3 rounded-lg bg-muted/50 border border-border"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <Badge variant="outline" className="text-xs">
+                          {intervention.intervention_type.replace(/_/g, " ")}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(intervention.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      
+                      <p className="text-sm mb-3">{intervention.recommendation}</p>
+                      
+                      {intervention.effectiveness_score === null ? (
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">Was this helpful?</p>
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((score) => (
+                              <button
+                                key={score}
+                                onClick={() => rateIntervention(intervention.id, score)}
+                                className="hover:scale-110 transition-transform"
+                              >
+                                <Star className="h-4 w-4 text-muted-foreground hover:text-yellow-500 hover:fill-yellow-500" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <span>Your rating:</span>
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: intervention.effectiveness_score }).map((_, i) => (
+                              <Star key={i} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

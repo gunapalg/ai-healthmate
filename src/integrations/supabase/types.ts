@@ -744,6 +744,8 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          alerts: boolean | null
+          autonomous_notifications_enabled: boolean | null
           created_at: string | null
           daily_calorie_goal: number | null
           daily_carbs_goal: number | null
@@ -752,14 +754,20 @@ export type Database = {
           dietary_preferences: string[] | null
           full_name: string | null
           gender: string | null
+          goal_suggestions: boolean | null
+          habit_changes: boolean | null
           height_cm: number | null
           id: string
+          meal_recommendations: boolean | null
+          notification_frequency: string | null
           target_weight_kg: number | null
           updated_at: string | null
           weight_kg: number | null
         }
         Insert: {
           age?: number | null
+          alerts?: boolean | null
+          autonomous_notifications_enabled?: boolean | null
           created_at?: string | null
           daily_calorie_goal?: number | null
           daily_carbs_goal?: number | null
@@ -768,14 +776,20 @@ export type Database = {
           dietary_preferences?: string[] | null
           full_name?: string | null
           gender?: string | null
+          goal_suggestions?: boolean | null
+          habit_changes?: boolean | null
           height_cm?: number | null
           id: string
+          meal_recommendations?: boolean | null
+          notification_frequency?: string | null
           target_weight_kg?: number | null
           updated_at?: string | null
           weight_kg?: number | null
         }
         Update: {
           age?: number | null
+          alerts?: boolean | null
+          autonomous_notifications_enabled?: boolean | null
           created_at?: string | null
           daily_calorie_goal?: number | null
           daily_carbs_goal?: number | null
@@ -784,8 +798,12 @@ export type Database = {
           dietary_preferences?: string[] | null
           full_name?: string | null
           gender?: string | null
+          goal_suggestions?: boolean | null
+          habit_changes?: boolean | null
           height_cm?: number | null
           id?: string
+          meal_recommendations?: boolean | null
+          notification_frequency?: string | null
           target_weight_kg?: number | null
           updated_at?: string | null
           weight_kg?: number | null

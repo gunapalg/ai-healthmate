@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.health-agent]
 verify_jwt = true
+
+[functions.autonomous-monitor]
+verify_jwt = false

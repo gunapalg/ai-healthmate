@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWearableOAuth } from "@/hooks/useWearableOAuth";
 import { useWearableSync } from "@/hooks/useWearableSync";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -39,6 +41,15 @@ const Profile = () => {
     daily_protein_goal: "120",
     daily_carbs_goal: "250",
     daily_fats_goal: "65",
+  });
+
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    autonomous_notifications_enabled: true,
+    notification_frequency: "daily" as "realtime" | "daily" | "weekly",
+    goal_suggestions: true,
+    meal_recommendations: true,
+    habit_changes: true,
+    alerts: true,
   });
 
   useEffect(() => {
@@ -76,6 +87,15 @@ const Profile = () => {
           daily_protein_goal: profileRes.data.daily_protein_goal?.toString() || "120",
           daily_carbs_goal: profileRes.data.daily_carbs_goal?.toString() || "250",
           daily_fats_goal: profileRes.data.daily_fats_goal?.toString() || "65",
+        });
+
+        setNotificationPreferences({
+          autonomous_notifications_enabled: profileRes.data.autonomous_notifications_enabled ?? true,
+          notification_frequency: (profileRes.data.notification_frequency as "realtime" | "daily" | "weekly") || "daily",
+          goal_suggestions: profileRes.data.goal_suggestions ?? true,
+          meal_recommendations: profileRes.data.meal_recommendations ?? true,
+          habit_changes: profileRes.data.habit_changes ?? true,
+          alerts: profileRes.data.alerts ?? true,
         });
       }
 
@@ -181,6 +201,31 @@ const Profile = () => {
       toast({
         title: "Profile updated!",
         description: "Your health profile has been saved successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveNotificationPreferences = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update(notificationPreferences)
+        .eq("id", user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Preferences updated!",
+        description: "Your notification preferences have been saved.",
       });
     } catch (error: any) {
       toast({
@@ -492,6 +537,112 @@ const Profile = () => {
                   Real-time syncing occurs automatically every 15 minutes and on connection changes.
                   Works on both web and mobile platforms.
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-primary" />
+                  Agent Notification Preferences
+                </CardTitle>
+                <CardDescription>Control when and how the AI health agent notifies you</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="autonomous-notifications">Autonomous Notifications</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Allow the health agent to proactively send recommendations
+                    </p>
+                  </div>
+                  <Switch
+                    id="autonomous-notifications"
+                    checked={notificationPreferences.autonomous_notifications_enabled}
+                    onCheckedChange={(checked) =>
+                      setNotificationPreferences({ ...notificationPreferences, autonomous_notifications_enabled: checked })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="frequency">Notification Frequency</Label>
+                  <Select
+                    value={notificationPreferences.notification_frequency}
+                    onValueChange={(value: "realtime" | "daily" | "weekly") =>
+                      setNotificationPreferences({ ...notificationPreferences, notification_frequency: value })
+                    }
+                    disabled={!notificationPreferences.autonomous_notifications_enabled}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select frequency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="realtime">Real-time (as they happen)</SelectItem>
+                      <SelectItem value="daily">Daily digest</SelectItem>
+                      <SelectItem value="weekly">Weekly summary</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-4">
+                  <Label>Notification Types</Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="goal-suggestions" className="font-normal">Goal Suggestions</Label>
+                      <Switch
+                        id="goal-suggestions"
+                        checked={notificationPreferences.goal_suggestions}
+                        onCheckedChange={(checked) =>
+                          setNotificationPreferences({ ...notificationPreferences, goal_suggestions: checked })
+                        }
+                        disabled={!notificationPreferences.autonomous_notifications_enabled}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="meal-recommendations" className="font-normal">Meal Recommendations</Label>
+                      <Switch
+                        id="meal-recommendations"
+                        checked={notificationPreferences.meal_recommendations}
+                        onCheckedChange={(checked) =>
+                          setNotificationPreferences({ ...notificationPreferences, meal_recommendations: checked })
+                        }
+                        disabled={!notificationPreferences.autonomous_notifications_enabled}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="habit-changes" className="font-normal">Habit Change Suggestions</Label>
+                      <Switch
+                        id="habit-changes"
+                        checked={notificationPreferences.habit_changes}
+                        onCheckedChange={(checked) =>
+                          setNotificationPreferences({ ...notificationPreferences, habit_changes: checked })
+                        }
+                        disabled={!notificationPreferences.autonomous_notifications_enabled}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="alerts" className="font-normal">Health Alerts</Label>
+                      <Switch
+                        id="alerts"
+                        checked={notificationPreferences.alerts}
+                        onCheckedChange={(checked) =>
+                          setNotificationPreferences({ ...notificationPreferences, alerts: checked })
+                        }
+                        disabled={!notificationPreferences.autonomous_notifications_enabled}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Button 
+                  type="button" 
+                  onClick={handleSaveNotificationPreferences} 
+                  disabled={loading}
+                  className="w-full"
+                >
+                  {loading ? "Saving..." : "Save Notification Preferences"}
+                </Button>
               </CardContent>
             </Card>
 

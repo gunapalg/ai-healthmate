@@ -10,6 +10,7 @@ import { Send, Bot, User, Target, TrendingUp, Sparkles, ArrowLeft, Bell, Star } 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import HelpTooltip from "@/components/HelpTooltip";
 
 interface Message {
   role: "user" | "assistant";
@@ -304,6 +305,11 @@ export default function HealthAgent() {
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
               <Bot className="h-8 w-8 text-primary" />
               Health Planning Agent
+              <HelpTooltip 
+                section="features" 
+                description="Chat with your AI health agent to analyze trends, create goals, and get meal suggestions"
+                size="md"
+              />
             </h1>
             <p className="text-muted-foreground">Your AI-powered health companion</p>
           </div>
@@ -407,9 +413,15 @@ export default function HealthAgent() {
           {/* Active Goals Sidebar */}
           <div className="space-y-6">
             <Card className="p-6">
-              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <Target className="h-5 w-5 text-primary" />
-                Active Goals
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 justify-between">
+                <div className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-primary" />
+                  Active Goals
+                </div>
+                <HelpTooltip 
+                  section="features" 
+                  description="Goals created by the agent or yourself. The agent tracks your progress automatically"
+                />
               </h3>
               
               {activeGoals.length === 0 ? (
@@ -453,9 +465,15 @@ export default function HealthAgent() {
             </Card>
 
             <Card className="p-6">
-              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <TrendingUp className="h-5 h-5 text-primary" />
-                Recent Recommendations
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 h-5 text-primary" />
+                  Recent Recommendations
+                </div>
+                <HelpTooltip 
+                  section="features" 
+                  description="Rate suggestions with stars - the agent learns from your feedback to improve future recommendations"
+                />
               </h3>
               
               {recentInterventions.length === 0 ? (

@@ -17,7 +17,8 @@ import {
   LogOut,
   Trophy,
   Users,
-  Bot
+  Bot,
+  HelpCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -370,6 +371,12 @@ const Dashboard = () => {
                 <Button className="w-full justify-start" variant="outline">
                   <Users className="w-4 h-4 mr-2" />
                   Community
+                </Button>
+              </Link>
+              <Link to="/help" className="w-full">
+                <Button className="w-full justify-start" variant="outline">
+                  <HelpCircle className="w-4 h-4 mr-2" />
+                  Help & Docs
                 </Button>
               </Link>
             </CardContent>

@@ -20,6 +20,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Social from "./pages/Social";
 import NotFound from "./pages/NotFound";
 import HealthAgent from "./pages/HealthAgent";
+import Help from "./pages/Help";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <HealthAgent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/help"
+              element={
+                <ProtectedRoute>
+                  <Help />
                 </ProtectedRoute>
               }
             />

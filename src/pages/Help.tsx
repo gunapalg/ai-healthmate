@@ -22,6 +22,8 @@ import {
   Activity
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import MermaidDiagram from "@/components/MermaidDiagram";
+import AnimatedWalkthrough from "@/components/AnimatedWalkthrough";
 
 interface Section {
   id: string;
@@ -476,6 +478,9 @@ const Help = () => {
               </CardContent>
             </Card>
 
+            {/* Animated Walkthrough */}
+            <AnimatedWalkthrough />
+
             {/* Content Sections */}
             <ScrollArea className="h-[calc(100vh-12rem)]">
               <div className="space-y-6 pr-4">
@@ -537,6 +542,87 @@ const Help = () => {
                                 </div>
                               </div>
                             ))}
+                          </div>
+                        )}
+
+                        {/* Add diagrams for specific sections */}
+                        {section.id === "how-it-works" && (
+                          <div className="space-y-6 mt-8">
+                            <Separator className="my-4" />
+                            <h3 className="text-lg font-semibold mb-4 text-primary">
+                              Visual Flow: Meal Logging Process
+                            </h3>
+                            <MermaidDiagram
+                              id="meal-flow-diagram"
+                              chart={`
+graph TD
+    A[📸 User Uploads Meal Photo] --> B[🤖 AI Analyzes Nutrition]
+    B --> C[💾 Save to Database]
+    C --> D{Agent Monitors in Real-Time}
+    D --> E[📊 Calculate Daily Progress]
+    E --> F{On Track?}
+    F -->|Yes| G[✅ Update Dashboard]
+    F -->|No| H[⚠️ Detect Issue]
+    H --> I[🧠 AI Analyzes Context]
+    I --> J[📝 Generate Suggestion]
+    J --> K[🔔 Notify User]
+    K --> L[⭐ User Rates Feedback]
+    L --> M[🎓 Agent Learns & Improves]
+    M --> D
+`}
+                            />
+
+                            <h3 className="text-lg font-semibold mb-4 text-primary mt-8">
+                              System Architecture
+                            </h3>
+                            <MermaidDiagram
+                              id="architecture-diagram"
+                              chart={`
+graph LR
+    A[👤 User Interface] --> B[⚡ Edge Functions]
+    B --> C[🧠 AI Gateway]
+    C --> D[🤖 Gemini 2.5 Flash]
+    D --> C
+    C --> B
+    B --> E[(🗄️ Supabase DB)]
+    E --> F[📊 Health Data]
+    E --> G[💬 Conversations]
+    E --> H[🎯 Goals & Memory]
+    E --> I[📈 Interventions]
+    B --> A
+    
+    J[⏰ Cron Job] --> K[🔍 Background Monitor]
+    K --> E
+    K --> B
+`}
+                            />
+
+                            <h3 className="text-lg font-semibold mb-4 text-primary mt-8">
+                              Learning Feedback Loop
+                            </h3>
+                            <MermaidDiagram
+                              id="feedback-loop-diagram"
+                              chart={`
+sequenceDiagram
+    participant U as 👤 User
+    participant A as 🤖 Agent
+    participant DB as 🗄️ Database
+    participant AI as 🧠 AI Model
+
+    U->>DB: Logs meal
+    DB->>A: Triggers real-time event
+    A->>DB: Fetches user goals & history
+    DB->>A: Returns context
+    A->>AI: Analyzes with context
+    AI->>A: Generates suggestion
+    A->>DB: Saves intervention
+    DB->>U: Shows suggestion
+    U->>DB: Rates suggestion (1-5 ⭐)
+    DB->>A: Updates effectiveness_score
+    Note over A,DB: Agent remembers:<br/>High ratings = good<br/>Low ratings = avoid
+    A->>A: Adjusts future recommendations
+`}
+                            />
                           </div>
                         )}
                       </CardContent>

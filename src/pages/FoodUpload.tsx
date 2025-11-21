@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { logAIRequest } from "@/lib/ai-logger";
+import HelpTooltip from "@/components/HelpTooltip";
 
 interface NutritionData {
   meal_name: string;
@@ -166,7 +167,14 @@ const FoodUpload = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">Log Your Meal</h1>
+          <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
+            Log Your Meal
+            <HelpTooltip 
+              section="how-to-use" 
+              description="Upload a meal photo and AI will analyze nutrition. The agent uses this data to give you personalized recommendations"
+              size="md"
+            />
+          </h1>
           <p className="text-muted-foreground mb-8">Upload a photo and let AI analyze the nutrition</p>
 
           <div className="space-y-6">
